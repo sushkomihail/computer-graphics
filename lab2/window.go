@@ -47,8 +47,8 @@ func (w *Window) drawHelpText(screen *ebiten.Image) {
 	controls := []string{
 		"controls:",
 		"   rotation:",
-		"      x-axis: x/mouse dragging",
-		"      z-axis: y/mouse dragging",
+		"      y-axis: x/mouse dragging",
+		"      x-axis: y/mouse dragging",
 	}
 
 	x, y = 10, 10

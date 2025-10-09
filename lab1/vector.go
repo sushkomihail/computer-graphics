@@ -55,8 +55,8 @@ func (v Vector) ToString() string {
 }
 
 func Cross(vec1, vec2 Vector) Vector {
-	i := vec1.Y*vec2.Z - vec1.Z*vec2.Y
-	j := vec1.Z*vec2.X - vec1.X*vec2.Z
-	k := vec1.X*vec2.Y - vec1.Y*vec2.X
-	return NewVector(i, j, k)
+	x := vec1.Y*vec2.Z - vec1.Z*vec2.Y
+	y := vec1.Z*vec2.X - vec1.X*vec2.Z
+	z := vec1.X*vec2.Y - vec1.Y*vec2.X
+	return NewVector(x, y, z)
 }

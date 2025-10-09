@@ -4,7 +4,7 @@ import (
 	base "go-graphics/lab1"
 	"image/color"
 	"log"
-	"math"
+	"sort"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
@@ -16,20 +16,27 @@ const (
 )
 
 type Window struct {
-	mouse        base.Mouse
-	axes         base.CoordinatesSystem
-	polygons     []Polygon
-	screenBuffer []int
-	zBuffer      []int
+	mouse       base.Mouse
+	axes        base.CoordinatesSystem
+	polygons    []Polygon
+	frameBuffer []int
+	zBuffer     []float32
 }
 
 func NewWindow(axes base.CoordinatesSystem, polygons []Polygon) *Window {
 	return &Window{
-		mouse:        base.Mouse{},
-		axes:         axes,
-		polygons:     polygons,
-		screenBuffer: make([]int, windowWidth*windowHeight),
-		zBuffer:      make([]int, windowWidth*windowHeight),
+		mouse:       base.Mouse{},
+		axes:        axes,
+		polygons:    polygons,
+		frameBuffer: make([]int, windowWidth),
+		zBuffer:     make([]float32, windowWidth),
+	}
+}
+
+func (w *Window) clearBuffers() {
+	for i := range windowWidth {
+		w.frameBuffer[i] = 0
+		w.zBuffer[i] = 0
 	}
 }
 
@@ -66,12 +73,44 @@ func (w *Window) Draw(screen *ebiten.Image) {
 	screen.Fill(color.RGBA{133, 108, 65, 255})
 	w.drawHelpText(screen)
 
-	for i := range w.zBuffer {
-		w.zBuffer[i] = int(math.Inf(-1))
-	}
+	for y := range windowHeight {
+		w.clearBuffers()
 
-	for _, v := range w.polygons {
-		v.Fill(screen, windowWidth, windowHeight, w.zBuffer)
+		for i, p := range w.polygons {
+			ok, intersections := p.tryGetIntersectionPoints(y)
+
+			if !ok {
+				continue
+			}
+
+			sort.Slice(intersections, func(i, j int) bool {
+				return intersections[i].X < intersections[j].X
+			})
+
+			for x := int(intersections[0].X); x <= int(intersections[len(intersections)-1].X); x++ {
+				if x < 0 && x > windowWidth-1 {
+					continue
+				}
+
+				z := p.planeEquation.GetPlaneZ(float32(x), float32(y))
+
+				if w.frameBuffer[x] == 0 {
+					w.frameBuffer[x] = i + 1
+					w.zBuffer[x] = z
+				} else if z > w.zBuffer[x] {
+					w.zBuffer[x] = z
+					w.frameBuffer[x] = i + 1
+				}
+			}
+		}
+
+		for x := range w.frameBuffer {
+			bufVal := w.frameBuffer[x]
+
+			if bufVal != 0 {
+				screen.Set(x, y, w.polygons[bufVal-1].color)
+			}
+		}
 	}
 }
 

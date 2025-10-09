@@ -3,10 +3,6 @@ package lab2
 import (
 	base "go-graphics/lab1"
 	"image/color"
-	"math"
-	"sort"
-
-	"github.com/hajimehoshi/ebiten/v2"
 )
 
 type Edge struct {
@@ -68,49 +64,20 @@ func (p *Polygon) ApplyTransformation(axes base.CoordinatesSystem, deltaRotation
 	p.planeEquation = GetPlaneEquation(verticesCopy[0], verticesCopy[1], verticesCopy[2])
 }
 
-func (p Polygon) Fill(screen *ebiten.Image, width, height int, zBuffer []int) {
-	for y := range height {
-		ok, points := p.tryGetIntersectionPoints(y + 1)
-
-		if !ok {
-			continue
-		}
-
-		sort.Slice(points, func(i, j int) bool {
-			return points[i].X < points[j].X
-		})
-
-		for x := int(points[0].X); x <= int(points[len(points)-1].X); x++ {
-			if x < 0 && x > width {
-				continue
-			}
-
-			z := int(math.Round(float64(p.planeEquation.GetPlaneZ(float32(x), float32(y)))))
-			bufferOffset := y*width + x
-
-			if z > zBuffer[bufferOffset] {
-				screen.Set(x, y, p.color)
-				zBuffer[bufferOffset] = z
-			}
-		}
-	}
-}
-
-func (p Polygon) tryGetIntersectionPoints(line int) (bool, []base.Vector) {
+func (p Polygon) tryGetIntersectionPoints(y int) (bool, []base.Vector) {
 	points := make([]base.Vector, 0, 4)
 
 	for _, e := range p.edges {
-		if hasIntersection(float32(line), e) && e.v1.Y == e.v2.Y {
+		if !hasIntersection(float32(y), e) {
+			continue
+		}
+
+		if e.v1.Y == e.v2.Y {
 			points = append(points, e.v1, e.v2)
 			break
 		}
 
-		ok, point := tryGetIntersectionPoint(float32(line), e)
-
-		if !ok {
-			continue
-		}
-
+		point := getIntersectionPoint(float32(y), e)
 		points = append(points, point)
 	}
 

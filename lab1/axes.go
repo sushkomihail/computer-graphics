@@ -19,6 +19,10 @@ func NewCoordinatesSystem(position Vector, scale float32) *CoordinatesSystem {
 	}
 }
 
+func (c CoordinatesSystem) GetScale() float32 {
+	return c.scale
+}
+
 func (cs *CoordinatesSystem) DrawAxes(screen *ebiten.Image, xLength, yLength float32) {
 	xColor := color.RGBA{R: 255, G: 0, B: 0, A: 255}
 	yColor := color.RGBA{R: 0, G: 255, B: 0, A: 255}
@@ -31,7 +35,7 @@ func (cs *CoordinatesSystem) DrawAxes(screen *ebiten.Image, xLength, yLength flo
 	vector.StrokeLine(screen, x0, y0, x1, y1, float32(strokeWidth), yColor, false)
 }
 
-func (cs *CoordinatesSystem) ProjectVertex(v *Vector) {
-	mat := GetTranslationMatrix(cs.position)
-	v.ApplyTransformationMatrix4x4(mat)
+func (c *CoordinatesSystem) ProjectVertex(vertex *Vector) {
+	mat := GetTranslationMatrix(c.position)
+	vertex.ApplyTransformationMatrix4x4(mat)
 }

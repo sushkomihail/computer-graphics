@@ -1,9 +1,9 @@
 package main
 
 import (
-	"go-graphics/lab1"
+	lab "go-graphics/lab2"
 )
 
 func main() {
-	lab1.Run()
+	lab.Run()
 }

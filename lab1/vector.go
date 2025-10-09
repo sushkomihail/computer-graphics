@@ -53,3 +53,10 @@ func (v Vector) Reverse() Vector {
 func (v Vector) ToString() string {
 	return fmt.Sprintf("x:%.1f y:%.1f z:%.1f", v.X, v.Y, v.Z)
 }
+
+func Cross(vec1, vec2 Vector) Vector {
+	i := vec1.Y*vec2.Z - vec1.Z*vec2.Y
+	j := vec1.Z*vec2.X - vec1.X*vec2.Z
+	k := vec1.X*vec2.Y - vec1.Y*vec2.X
+	return NewVector(i, j, k)
+}

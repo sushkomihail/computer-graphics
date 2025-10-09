@@ -43,20 +43,6 @@ func (o Object) DrawObject(screen *ebiten.Image) {
 	v0 := o.transformedVertices[0]
 	v1 := o.transformedVertices[len(o.transformedVertices)-5]
 	vector.StrokeLine(screen, v0.X, v0.Y, v1.X, v1.Y, float32(strokeWidth), objectColor, false)
-
-	// local axes
-	xColor := color.RGBA{255, 0, 0, 255}
-	yColor := color.RGBA{0, 255, 0, 255}
-	zColor := color.RGBA{0, 0, 255, 255}
-
-	zero := o.transformedVertices[len(o.transformedVertices)-4]
-	xAxis := o.transformedVertices[len(o.transformedVertices)-3]
-	yAxis := o.transformedVertices[len(o.transformedVertices)-2]
-	zAxis := o.transformedVertices[len(o.transformedVertices)-1]
-
-	vector.StrokeLine(screen, zero.X, zero.Y, xAxis.X, xAxis.Y, float32(strokeWidth), xColor, false)
-	vector.StrokeLine(screen, zero.X, zero.Y, yAxis.X, yAxis.Y, float32(strokeWidth), yColor, false)
-	vector.StrokeLine(screen, zero.X, zero.Y, zAxis.X, zAxis.Y, float32(strokeWidth), zColor, false)
 }
 
 func (o *Object) ApplyTransformation(deltaPosition, deltaRotation, scaleFactor Vector,

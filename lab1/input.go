@@ -1,6 +1,8 @@
 package lab1
 
 import (
+	"math"
+
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
@@ -9,6 +11,9 @@ const (
 	translationSpeed = 2
 	rotationSpeed    = 1
 	scaleChange      = 0.1
+	intensityChange  = 10
+	specCoefChange   = 0.1
+	diffCoefChange   = 0.1
 )
 
 func HandleTranslationInput() Vector {
@@ -72,11 +77,35 @@ func HandleScaleInput() Vector {
 	return scaleFactor
 }
 
-func HandleProjectionSwitchInput(animation *Animation) {
+func HandleAnimationInput(animation *Animation) {
 	if inpututil.IsKeyJustPressed(ebiten.KeyP) {
 		if animation.IsFinished() {
 			animation.Start()
 		}
+	}
+}
+
+func HandleLightingInput(isSimple *bool, intensity, specCoef, diffCoef *float64) {
+	if inpututil.IsKeyJustPressed(ebiten.KeyG) {
+		*isSimple = !(*isSimple)
+	}
+
+	if isComboPressed(ebiten.KeyShift, ebiten.KeyI) {
+		updateValue(intensity, -intensityChange, 0, 250)
+	} else if inpututil.IsKeyJustPressed(ebiten.KeyI) {
+		updateValue(intensity, intensityChange, 0, 250)
+	}
+
+	if isComboPressed(ebiten.KeyShift, ebiten.KeyS) {
+		updateValue(specCoef, -specCoefChange, 0, 1)
+	} else if inpututil.IsKeyJustPressed(ebiten.KeyS) {
+		updateValue(specCoef, specCoefChange, 0, 1)
+	}
+
+	if isComboPressed(ebiten.KeyShift, ebiten.KeyD) {
+		updateValue(diffCoef, -diffCoefChange, 0, 1)
+	} else if inpututil.IsKeyJustPressed(ebiten.KeyD) {
+		updateValue(diffCoef, diffCoefChange, 0, 1)
 	}
 }
 
@@ -87,5 +116,17 @@ func handlePressedKey(key ebiten.Key, dest *float32, src float32) {
 
 	if inpututil.IsKeyJustReleased(key) {
 		*dest = 0
+	}
+}
+
+func isComboPressed(modifier ebiten.Key, key ebiten.Key) bool {
+	return ebiten.IsKeyPressed(modifier) && inpututil.IsKeyJustPressed(key)
+}
+
+func updateValue(value *float64, change, min, max float64) {
+	if change < 0 {
+		*value += math.Max(-(*value - min), change)
+	} else {
+		*value += math.Min((max - *value), change)
 	}
 }

@@ -77,17 +77,17 @@ func (w *Window) Draw(screen *ebiten.Image) {
 		w.clearBuffers()
 
 		for i, p := range w.polygons {
-			ok, intersections := p.tryGetIntersectionPoints(y)
+			ok, intersections := p.TryGetIntersections(y)
 
 			if !ok {
 				continue
 			}
 
 			sort.Slice(intersections, func(i, j int) bool {
-				return intersections[i].X < intersections[j].X
+				return intersections[i].point.X < intersections[j].point.X
 			})
 
-			for x := int(intersections[0].X); x <= int(intersections[len(intersections)-1].X); x++ {
+			for x := int(intersections[0].point.X); x <= int(intersections[len(intersections)-1].point.X); x++ {
 				if x < 0 && x > windowWidth-1 {
 					continue
 				}
@@ -124,34 +124,34 @@ func Run() {
 
 	axes := *base.NewCoordinatesSystem(base.NewVector(windowWidth/2, windowHeight/2, 0), 20)
 
-	triangle := NewPolygon([]base.Vector{
-		base.NewVector(0, 1, 2),
-		base.NewVector(-1, -1, -3),
-		base.NewVector(1, -1, -3),
+	triangle := NewPolygon([]*Vertex{
+		{Point: base.NewVector(0, 1, 2)},
+		{Point: base.NewVector(-1, -1, -3)},
+		{Point: base.NewVector(1, -1, -3)},
 	}, axes.GetScale(), color.RGBA{255, 255, 255, 255})
 
-	square := NewPolygon([]base.Vector{
-		base.NewVector(-1, -1, 0.5),
-		base.NewVector(1, -1, 0.5),
-		base.NewVector(1, 1, 0.5),
-		base.NewVector(-1, 1, 0.5),
+	square := NewPolygon([]*Vertex{
+		{Point: base.NewVector(-1, -1, 0.5)},
+		{Point: base.NewVector(1, -1, 0.5)},
+		{Point: base.NewVector(1, 1, 0.5)},
+		{Point: base.NewVector(-1, 1, 0.5)},
 	}, axes.GetScale(), color.RGBA{150, 150, 150, 255})
 
-	pentagon := NewPolygon([]base.Vector{
-		base.NewVector(0, -3, -1.5),
-		base.NewVector(-3, -1, -1.5),
-		base.NewVector(-2, 3, -1.5),
-		base.NewVector(2, 3, -1.5),
-		base.NewVector(3, -1, -1.5),
+	pentagon := NewPolygon([]*Vertex{
+		{Point: base.NewVector(0, -3, -1.5)},
+		{Point: base.NewVector(-3, -1, -1.5)},
+		{Point: base.NewVector(-2, 3, -1.5)},
+		{Point: base.NewVector(2, 3, -1.5)},
+		{Point: base.NewVector(3, -1, -1.5)},
 	}, axes.GetScale(), color.RGBA{99, 99, 99, 255})
 
-	hexagon := NewPolygon([]base.Vector{
-		base.NewVector(6, 0, -4),
-		base.NewVector(3, -5, -4),
-		base.NewVector(-3, -5, -4),
-		base.NewVector(-6, 0, -4),
-		base.NewVector(-3, 5, -4),
-		base.NewVector(3, 5, -4),
+	hexagon := NewPolygon([]*Vertex{
+		{Point: base.NewVector(6, 0, -4)},
+		{Point: base.NewVector(3, -5, -4)},
+		{Point: base.NewVector(-3, -5, -4)},
+		{Point: base.NewVector(-6, 0, -4)},
+		{Point: base.NewVector(-3, 5, -4)},
+		{Point: base.NewVector(3, 5, -4)},
 	}, axes.GetScale(), color.RGBA{66, 66, 66, 255})
 
 	window := NewWindow(axes, []Polygon{

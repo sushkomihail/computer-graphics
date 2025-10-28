@@ -5,47 +5,80 @@ import (
 	"image/color"
 )
 
-type Edge struct {
-	v1 base.Vector
-	v2 base.Vector
+type Vertex struct {
+	Point  base.Vector
+	Normal base.Vector
 }
 
-func NewEdge(v1, v2 base.Vector) *Edge {
+type Edge struct {
+	A *Vertex
+	B *Vertex
+}
+
+func NewEdge(a, b *Vertex) *Edge {
 	return &Edge{
-		v1: v1,
-		v2: v2,
+		A: a,
+		B: b,
 	}
 }
 
 type Polygon struct {
-	vertices       []base.Vector
-	edges          []Edge
-	planeEquation  PlaneEquation
-	globalRotation base.Vector
-	color          color.Color
+	vertices            []base.Vector
+	transformedVertices []*Vertex
+	edges               []Edge
+	center              base.Vector
+	planeEquation       PlaneEquation
+	globalRotation      base.Vector
+	color               color.Color
 }
 
-func NewPolygon(vertices []base.Vector, axesScale float32, color color.Color) *Polygon {
+func NewPolygon(vertices []*Vertex, axesScale float32, color color.Color) *Polygon {
+	baseVertices := make([]base.Vector, len(vertices))
+
 	for i := range vertices {
-		vertices[i].Multiply(axesScale)
+		baseVertices[i] = vertices[i].Point
 	}
 
+	edges := generateEdges(vertices)
+
 	return &Polygon{
-		vertices:       vertices,
-		edges:          generateEdges(vertices),
-		planeEquation:  GetPlaneEquation(vertices[0], vertices[1], vertices[2]),
-		globalRotation: base.Vector{},
-		color:          color,
+		vertices:            baseVertices,
+		transformedVertices: vertices,
+		edges:               edges,
+		planeEquation:       GetPlaneEquation(vertices[0].Point, vertices[1].Point, vertices[2].Point),
+		globalRotation:      base.Vector{},
+		color:               color,
 	}
+}
+
+func (p Polygon) GetVertices() []*Vertex {
+	return p.transformedVertices
 }
 
 func (p Polygon) GetEdges() []Edge {
 	return p.edges
 }
 
+func (p Polygon) GetCenter() base.Vector {
+	return p.center
+}
+
+func (p Polygon) GetPlaneEquation() PlaneEquation {
+	return p.planeEquation
+}
+
+func CopyVertices(src []base.Vector, dst []*Vertex) {
+	for i, v := range src {
+		if dst[i] == nil {
+			dst[i] = &Vertex{Point: v}
+		} else {
+			dst[i].Point = v
+		}
+	}
+}
+
 func (p *Polygon) ApplyTransformation(axes base.CoordinatesSystem, deltaRotation base.Vector) {
-	verticesCopy := make([]base.Vector, len(p.vertices))
-	copy(verticesCopy, p.vertices)
+	CopyVertices(p.vertices, p.transformedVertices)
 
 	p.globalRotation.Add(deltaRotation)
 
@@ -54,37 +87,40 @@ func (p *Polygon) ApplyTransformation(axes base.CoordinatesSystem, deltaRotation
 
 	rotationMatrix := base.MultiplyMatrices(xRotationMatrix, yRotationMatrix)
 
-	for i, v := range verticesCopy {
-		v.ApplyTransformationMatrix4x4(rotationMatrix)
-		axes.ProjectVertex(&v)
-		verticesCopy[i] = v
+	for i, v := range p.transformedVertices {
+		v.Point.ApplyTransformationMatrix4x4(rotationMatrix)
+		axes.ProjectVertex(&v.Point)
+		p.transformedVertices[i] = v
 	}
 
-	p.edges = generateEdges(verticesCopy)
-	p.planeEquation = GetPlaneEquation(verticesCopy[0], verticesCopy[1], verticesCopy[2])
+	p.planeEquation = GetPlaneEquation(
+		p.transformedVertices[0].Point,
+		p.transformedVertices[1].Point,
+		p.transformedVertices[2].Point)
+	p.center = calculateCenter(p.transformedVertices)
 }
 
-func (p Polygon) tryGetIntersectionPoints(y int) (bool, []base.Vector) {
-	points := make([]base.Vector, 0, 4)
+func (p Polygon) TryGetIntersections(y int) (bool, []Intersection) {
+	intersections := make([]Intersection, 0, 4)
 
 	for _, e := range p.edges {
 		if !hasIntersection(float32(y), e) {
 			continue
 		}
 
-		if e.v1.Y == e.v2.Y {
-			points = append(points, e.v1, e.v2)
+		if e.A.Point.Y == e.B.Point.Y {
+			intersections = append(intersections, *NewIntersection(e.A.Point, e), *NewIntersection(e.B.Point, e))
 			break
 		}
 
-		point := getIntersectionPoint(float32(y), e)
-		points = append(points, point)
+		intersection := getIntersection(float32(y), e)
+		intersections = append(intersections, intersection)
 	}
 
-	return len(points) != 0, points
+	return len(intersections) != 0, intersections
 }
 
-func generateEdges(vertices []base.Vector) []Edge {
+func generateEdges(vertices []*Vertex) []Edge {
 	edges := make([]Edge, len(vertices))
 	idx := 0
 
@@ -95,4 +131,15 @@ func generateEdges(vertices []base.Vector) []Edge {
 
 	edges[idx] = *NewEdge(vertices[idx], vertices[0])
 	return edges
+}
+
+func calculateCenter(vertices []*Vertex) base.Vector {
+	center := vertices[0].Point
+
+	for i := 1; i < len(vertices); i++ {
+		center.Add(vertices[i].Point)
+	}
+
+	center.Multiply(1 / float32(len(vertices)))
+	return center
 }

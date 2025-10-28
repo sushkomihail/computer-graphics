@@ -1,14 +1,14 @@
 package lab1
 
 type Animation struct {
-	duration    float64
-	elapsedTime float64
+	Duration    float64
+	ElapsedTime float64
 	isFinished  bool
 }
 
 func NewAnimation(duration float64) *Animation {
 	return &Animation{
-		duration:   duration,
+		Duration:   duration,
 		isFinished: true,
 	}
 }
@@ -18,21 +18,21 @@ func (a *Animation) IsFinished() bool {
 }
 
 func (a *Animation) Start() {
-	a.elapsedTime = 0
+	a.ElapsedTime = 0
 	a.isFinished = false
 }
 
 func (a *Animation) Update(deltaTime float64) {
-	a.elapsedTime += deltaTime
+	a.ElapsedTime += deltaTime
 
-	if a.elapsedTime >= a.duration {
-		a.elapsedTime = a.duration
+	if a.ElapsedTime >= a.Duration {
+		a.ElapsedTime = a.Duration
 		a.isFinished = true
 	}
 }
 
 func AnimatePerspectiveChange(from, to [4][4]float32, animation *Animation) [4][4]float32 {
-	progress := animation.elapsedTime / animation.duration
+	progress := animation.ElapsedTime / animation.Duration
 
 	for i := range 4 {
 		for j := range 4 {

@@ -83,7 +83,7 @@ func (w *Window) Update() error {
 	deltaPosition := HandleTranslationInput()
 	deltaRotation := HandleRotationInput(&w.mouse)
 	scaleFactor := HandleScaleInput()
-	HandleProjectionSwitchInput(&w.animation)
+	HandleAnimationInput(&w.animation)
 
 	w.letter.ApplyTransformation(deltaPosition, deltaRotation, scaleFactor, w.projectionMatrix, w.axes)
 

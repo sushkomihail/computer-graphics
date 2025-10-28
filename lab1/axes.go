@@ -23,6 +23,10 @@ func (c CoordinatesSystem) GetScale() float32 {
 	return c.scale
 }
 
+func (c *CoordinatesSystem) SetPosition(position Vector) {
+	c.position = position
+}
+
 func (cs *CoordinatesSystem) DrawAxes(screen *ebiten.Image, xLength, yLength float32) {
 	xColor := color.RGBA{R: 255, G: 0, B: 0, A: 255}
 	yColor := color.RGBA{R: 0, G: 255, B: 0, A: 255}

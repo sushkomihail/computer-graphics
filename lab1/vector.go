@@ -1,6 +1,13 @@
 package lab1
 
-import "fmt"
+import (
+	"fmt"
+	"math"
+)
+
+const (
+	e = 1e-6
+)
 
 type Vector struct {
 	X float32
@@ -45,9 +52,38 @@ func (v *Vector) Multiply(val float32) {
 	v.Z *= val
 }
 
+func (v *Vector) Normalize() {
+	length := float32(v.CalculateLength())
+
+	if length > 0 {
+		v.X /= length
+		v.Y /= length
+		v.Z /= length
+	}
+}
+
+func (v Vector) CalculateLength() float64 {
+	return math.Sqrt(float64(v.X*v.X + v.Y*v.Y + v.Z*v.Z))
+}
+
+func (v Vector) GetReflected(normal Vector) Vector {
+	v.Normalize()
+	normal.Normalize()
+
+	dot := Dot(v, normal)
+	normal.Multiply(float32(dot) * 2)
+	normal.Add(v.Reverse())
+	return normal
+}
+
 func (v Vector) Reverse() Vector {
 	v.Multiply(-1)
 	return v
+}
+
+func (v Vector) ComparableWith(v1 Vector) bool {
+	v.Add(v1.Reverse())
+	return v.CalculateLength() <= e
 }
 
 func (v Vector) ToString() string {
@@ -59,4 +95,14 @@ func Cross(vec1, vec2 Vector) Vector {
 	y := vec1.Z*vec2.X - vec1.X*vec2.Z
 	z := vec1.X*vec2.Y - vec1.Y*vec2.X
 	return NewVector(x, y, z)
+}
+
+func Dot(vec1, vec2 Vector) float64 {
+	return float64(vec1.X*vec2.X + vec1.Y*vec2.Y + vec1.Z*vec2.Z)
+}
+
+func CalculateDistance(p1, p2 Vector) float64 {
+	vec := p2
+	vec.Add(p1.Reverse())
+	return vec.CalculateLength()
 }

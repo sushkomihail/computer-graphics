@@ -16,7 +16,7 @@ const (
 
 	focusDistance float32 = 200
 
-	aimationDuration float64 = 0.5
+	animationDuration float64 = 0.5
 )
 
 type Window struct {
@@ -36,7 +36,7 @@ func NewWindow(axes *CoordinatesSystem, letter *Object) Window {
 		mouse:            Mouse{},
 		letter:           *letter,
 		projectionMatrix: GetIdentityMatrix(),
-		animation:        *NewAnimation(aimationDuration),
+		animation:        *NewAnimation(animationDuration),
 		fromProjection:   GetIdentityMatrix(),
 		toProjection:     GetPerspectiveProjectionMatrix(focusDistance),
 	}

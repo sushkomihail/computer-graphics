@@ -67,8 +67,8 @@ func (v Vector) CalculateLength() float64 {
 }
 
 func (v Vector) GetReflected(normal Vector) Vector {
-	v.Normalize()
-	normal.Normalize()
+	// v.Normalize()
+	// normal.Normalize()
 
 	dot := Dot(v, normal)
 	normal.Multiply(float32(dot) * 2)

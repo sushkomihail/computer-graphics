@@ -1,7 +1,7 @@
 package main
 
 import (
-	lab "go-graphics/lab3"
+	lab "go-graphics/lab1"
 )
 
 func main() {
